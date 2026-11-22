@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hourly to Salary Calculator</title>
+<meta name="description" content="Convert an hourly wage to a yearly, monthly, biweekly, weekly, and daily salary.">
+<style>
+:root{--bg:#eef2f5;--card:#fff;--ink:#14232e;--mute:#5b6b77;--line:#d5dde3;--acc:#1f6f5c;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1a21;--card:#17252e;--ink:#e8eef2;--mute:#97a8b4;--line:#2a3b46;--acc:#4fc3a1;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1a21;--card:#17252e;--ink:#e8eef2;--mute:#97a8b4;--line:#2a3b46;--acc:#4fc3a1;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:960px;margin:0 auto;padding:28px 18px 48px}
+h1{font:700 clamp(26px,5vw,38px)/1.15 Georgia,"Times New Roman",serif;margin:0 0 6px}
+.sub{color:var(--mute);margin:0 0 24px;max-width:56ch}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:760px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px}
+label{display:block;font-size:14px;color:var(--mute);margin:14px 0 4px}
+label:first-child{margin-top:0}
+input{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+input:focus-visible{outline:3px solid var(--acc);outline-offset:1px}
+.per{color:var(--mute);margin:0}
+.big{font:700 clamp(40px,9vw,60px)/1 Georgia,serif;color:var(--acc);margin:4px 0 18px}
+ul{list-style:none;margin:0;padding:0}
+li{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+li:last-child{border:0}
+li b{font-variant-numeric:tabular-nums}
+footer{margin-top:28px;font-size:13px;color:var(--mute);max-width:70ch}
+a{color:var(--acc)}
+</style>
+</head>
+<body>
+<main>
+<h1>Hourly to salary calculator</h1>
+<p class="sub">Enter your hourly wage and schedule to see what you earn per year, month, two weeks, week, and day, before taxes.</p>
+<div class="grid">
+<section class="card" aria-label="Pay details">
+<label for="rate">Hourly wage ($)</label>
+<input id="rate" type="number" inputmode="decimal" value="25" min="0" step="0.25">
+<label for="hrs">Hours per week</label>
+<input id="hrs" type="number" inputmode="decimal" value="40" min="0" max="168">
+<label for="days">Days per week</label>
+<input id="days" type="number" inputmode="decimal" value="5" min="1" max="7">
+<label for="off">Unpaid weeks off per year</label>
+<input id="off" type="number" inputmode="decimal" value="0" min="0" max="52">
+</section>
+<section class="card" aria-live="polite" aria-label="Results">
+<p class="per">Yearly salary before taxes</p>
+<p class="big" id="year">$0</p>
+<ul id="list"></ul>
+</section>
+</div>
+<footer>These are gross earnings before taxes and deductions. Paid vacation and holidays count as worked weeks, so leave unpaid weeks at 0 if you are paid for them. Also see the <a href="./">mortgage payment calculator</a>.</footer>
+</main>
+<script>
+(function(){
+var ids=["rate","hrs","days","off"],el={};
+ids.forEach(function(i){el[i]=document.getElementById(i);el[i].addEventListener("input",calc)});
+var usd=new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0});
+function v(i){var n=parseFloat(el[i].value);return isFinite(n)&&n>0?n:0}
+function calc(){
+var weeks=Math.max(52-v("off"),0),week=v("rate")*v("hrs"),year=week*weeks,days=v("days")||1;
+document.getElementById("year").textContent=usd.format(year);
+var rows=[["Monthly",year/12],["Every two weeks",year/26],["Weekly",week],["Daily",week/days],["Per hour",v("rate")]];
+document.getElementById("list").innerHTML=rows.map(function(r){return '<li><span>'+r[0]+'</span><b>'+(r[0]==="Per hour"?'$'+r[1].toFixed(2):usd.format(r[1]))+'</b></li>'}).join("");
+}
+calc();
+})();
+</script>
+</body>
+</html>
