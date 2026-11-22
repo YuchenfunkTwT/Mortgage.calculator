@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mortgage Payment Calculator</title>
+<style>
+:root{--bg:#eef2f5;--card:#fff;--ink:#14232e;--mute:#5b6b77;--line:#d5dde3;--acc:#1f6f5c;--acc2:#c98a1b;--acc3:#4a6fa5;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1a21;--card:#17252e;--ink:#e8eef2;--mute:#97a8b4;--line:#2a3b46;--acc:#4fc3a1;--acc2:#e3b04b;--acc3:#8fb0e0;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1a21;--card:#17252e;--ink:#e8eef2;--mute:#97a8b4;--line:#2a3b46;--acc:#4fc3a1;--acc2:#e3b04b;--acc3:#8fb0e0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:960px;margin:0 auto;padding:28px 18px 48px}
+h1{font:700 clamp(26px,5vw,38px)/1.15 Georgia,"Times New Roman",serif;margin:0 0 6px}
+.sub{color:var(--mute);margin:0 0 24px;max-width:56ch}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:760px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px}
+label{display:block;font-size:14px;color:var(--mute);margin:14px 0 4px}
+label:first-child{margin-top:0}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+input,select{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+input:focus-visible,select:focus-visible{outline:3px solid var(--acc);outline-offset:1px}
+.big{font:700 clamp(40px,9vw,60px)/1 Georgia,serif;color:var(--acc);margin:4px 0 2px}
+.per{color:var(--mute);margin:0 0 18px}
+.bar{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--line);margin-bottom:14px}
+.bar span{display:block;height:100%}
+ul{list-style:none;margin:0;padding:0}
+li{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+li:last-child{border:0}
+li b{font-variant-numeric:tabular-nums}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}
+.tot{margin-top:14px;font-size:14px;color:var(--mute)}
+footer{margin-top:28px;font-size:13px;color:var(--mute);max-width:70ch}
+</style>
+</head>
+<body>
+<main>
+<h1>Mortgage payment calculator</h1>
+<p class="sub">Enter a home price and loan terms to see your estimated monthly payment, including property tax and insurance.</p>
+<div class="grid">
+<section class="card" aria-label="Loan details">
+<label for="price">Home price ($)</label>
+<input id="price" type="number" inputmode="decimal" value="400000" min="0">
+<div class="row">
+<div><label for="down">Down payment (%)</label><input id="down" type="number" inputmode="decimal" value="20" min="0" max="100" step="0.5"></div>
+<div><label for="rate">Interest rate (%)</label><input id="rate" type="number" inputmode="decimal" value="6.5" min="0" step="0.125"></div>
+</div>
+<label for="term">Loan term</label>
+<select id="term"><option value="30" selected>30 years</option><option value="20">20 years</option><option value="15">15 years</option><option value="10">10 years</option></select>
+<div class="row">
+<div><label for="tax">Property tax (% per year)</label><input id="tax" type="number" inputmode="decimal" value="1.1" min="0" step="0.05"></div>
+<div><label for="ins">Home insurance ($ per year)</label><input id="ins" type="number" inputmode="decimal" value="1600" min="0"></div>
+</div>
+<label for="hoa">HOA fees ($ per month)</label>
+<input id="hoa" type="number" inputmode="decimal" value="0" min="0">
+</section>
+<section class="card" aria-live="polite" aria-label="Results">
+<p class="per">Estimated monthly payment</p>
+<p class="big" id="total">$0</p>
+<p class="per" id="loan"></p>
+<div class="bar" id="bar"></div>
+<ul id="list"></ul>
+<p class="tot" id="life"></p>
+</section>
+</div>
+<footer>This calculator gives estimates for planning only. Your lender's quote will differ based on your credit, location, and loan type. It does not include mortgage insurance (PMI), which many lenders require when the down payment is under 20%.</footer>
+</main>
+<script>
+(function(){
+var ids=["price","down","rate","term","tax","ins","hoa"],el={};
+ids.forEach(function(i){el[i]=document.getElementById(i);el[i].addEventListener("input",calc)});
+var usd=new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0});
+function v(i){var n=parseFloat(el[i].value);return isFinite(n)&&n>0?n:0}
+function calc(){
+var price=v("price"),down=Math.min(v("down"),100),loan=price*(1-down/100),n=v("term")*12,r=v("rate")/100/12;
+var pi=n?(r?loan*r/(1-Math.pow(1+r,-n)):loan/n):0;
+var tax=price*v("tax")/100/12,ins=v("ins")/12,hoa=v("hoa"),total=pi+tax+ins+hoa;
+document.getElementById("total").textContent=usd.format(total);
+document.getElementById("loan").textContent="Loan amount "+usd.format(loan)+" · Down payment "+usd.format(price-loan);
+var parts=[["Principal and interest",pi,"var(--acc)"],["Property tax",tax,"var(--acc2)"],["Home insurance",ins,"var(--acc3)"],["HOA fees",hoa,"var(--mute)"]];
+document.getElementById("bar").innerHTML=parts.map(function(p){return '<span style="width:'+(total?p[1]/total*100:0)+'%;background:'+p[2]+'"></span>'}).join("");
+document.getElementById("list").innerHTML=parts.map(function(p){return '<li><span><i class="dot" style="background:'+p[2]+'"></i>'+p[0]+'</span><b>'+usd.format(p[1])+'</b></li>'}).join("");
+document.getElementById("life").textContent="Total interest over the life of the loan: "+usd.format(Math.max(pi*n-loan,0));
+}
+calc();
+})();
+</script>
+</body>
+</html>
