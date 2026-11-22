@@ -34,11 +34,15 @@ li b{font-variant-numeric:tabular-nums}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}
 .tot{margin-top:14px;font-size:14px;color:var(--mute)}
 a{color:var(--acc)}
+nav{display:flex;flex-wrap:wrap;gap:6px 18px;margin:0 0 22px;padding-bottom:12px;border-bottom:1px solid var(--line);font-size:15px}
+nav a{text-decoration:none}
+nav a[aria-current]{color:var(--ink);font-weight:700}
 footer{margin-top:28px;font-size:13px;color:var(--mute);max-width:70ch}
 </style>
 </head>
 <body>
 <main>
+<nav aria-label="Calculators"><a href="./" aria-current="page">Mortgage payment</a><a href="extra-mortgage-payment.html">Extra payment</a><a href="hourly-to-salary.html">Hourly to salary</a><a href="rent-vs-buy.html">Rent vs buy</a></nav>
 <h1>Mortgage payment calculator</h1>
 <p class="sub">Enter a home price and loan terms to see your estimated monthly payment, including property tax and insurance.</p>
 <div class="grid">

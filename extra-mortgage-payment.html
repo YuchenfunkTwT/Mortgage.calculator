@@ -31,12 +31,16 @@ ul{list-style:none;margin:0;padding:0}
 li{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
 li:last-child{border:0}
 li b{font-variant-numeric:tabular-nums;text-align:right}
+nav{display:flex;flex-wrap:wrap;gap:6px 18px;margin:0 0 22px;padding-bottom:12px;border-bottom:1px solid var(--line);font-size:15px}
+nav a{text-decoration:none}
+nav a[aria-current]{color:var(--ink);font-weight:700}
 footer{margin-top:28px;font-size:13px;color:var(--mute);max-width:70ch}
 a{color:var(--acc)}
 </style>
 </head>
 <body>
 <main>
+<nav aria-label="Calculators"><a href="./">Mortgage payment</a><a href="extra-mortgage-payment.html" aria-current="page">Extra payment</a><a href="hourly-to-salary.html">Hourly to salary</a><a href="rent-vs-buy.html">Rent vs buy</a></nav>
 <h1>Extra mortgage payment calculator</h1>
 <p class="sub">Enter your current loan and an extra monthly amount to see how much interest you save and how much sooner you pay off your home.</p>
 <div class="grid">

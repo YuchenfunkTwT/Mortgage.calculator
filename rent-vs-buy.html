@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rent vs Buy Calculator</title>
+<meta name="description" content="Compare the total cost of renting and buying a home over the years you plan to stay.">
+<style>
+:root{--bg:#eef2f5;--card:#fff;--ink:#14232e;--mute:#5b6b77;--line:#d5dde3;--acc:#1f6f5c;--acc2:#c98a1b;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1a21;--card:#17252e;--ink:#e8eef2;--mute:#97a8b4;--line:#2a3b46;--acc:#4fc3a1;--acc2:#e3b04b;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1a21;--card:#17252e;--ink:#e8eef2;--mute:#97a8b4;--line:#2a3b46;--acc:#4fc3a1;--acc2:#e3b04b;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:960px;margin:0 auto;padding:28px 18px 48px}
+h1{font:700 clamp(26px,5vw,38px)/1.15 Georgia,"Times New Roman",serif;margin:0 0 6px}
+.sub{color:var(--mute);margin:0 0 24px;max-width:56ch}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:760px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px}
+label{display:block;font-size:14px;color:var(--mute);margin:14px 0 4px}
+label:first-child{margin-top:0}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+input{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+input:focus-visible{outline:3px solid var(--acc);outline-offset:1px}
+.per{color:var(--mute);margin:0}
+.big{font:700 clamp(30px,7vw,44px)/1.1 Georgia,serif;color:var(--acc);margin:4px 0 6px}
+.note{color:var(--mute);margin:0 0 18px}
+ul{list-style:none;margin:0;padding:0}
+li{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+li:last-child{border:0}
+li b{font-variant-numeric:tabular-nums;text-align:right}
+nav{display:flex;flex-wrap:wrap;gap:6px 18px;margin:0 0 22px;padding-bottom:12px;border-bottom:1px solid var(--line);font-size:15px}
+nav a{text-decoration:none}
+nav a[aria-current]{color:var(--ink);font-weight:700}
+footer{margin-top:28px;font-size:13px;color:var(--mute);max-width:70ch}
+a{color:var(--acc)}
+</style>
+</head>
+<body>
+<main>
+<nav aria-label="Calculators"><a href="./">Mortgage payment</a><a href="extra-mortgage-payment.html">Extra payment</a><a href="hourly-to-salary.html">Hourly to salary</a><a href="rent-vs-buy.html" aria-current="page">Rent vs buy</a></nav>
+<h1>Rent vs buy calculator</h1>
+<p class="sub">Compare what it really costs to buy a home or keep renting over the years you plan to stay.</p>
+<div class="grid">
+<section class="card" aria-label="Inputs">
+<label for="price">Home price ($)</label>
+<input id="price" type="number" inputmode="decimal" value="400000" min="0">
+<div class="row">
+<div><label for="down">Down payment (%)</label><input id="down" type="number" inputmode="decimal" value="20" min="0" max="100" step="0.5"></div>
+<div><label for="rate">Mortgage rate (%)</label><input id="rate" type="number" inputmode="decimal" value="6.5" min="0" step="0.125"></div>
+</div>
+<div class="row">
+<div><label for="tax">Property tax (% per year)</label><input id="tax" type="number" inputmode="decimal" value="1.1" min="0" step="0.05"></div>
+<div><label for="ins">Insurance ($ per year)</label><input id="ins" type="number" inputmode="decimal" value="1600" min="0"></div>
+</div>
+<div class="row">
+<div><label for="mnt">Upkeep (% of price per year)</label><input id="mnt" type="number" inputmode="decimal" value="1" min="0" step="0.25"></div>
+<div><label for="apr">Home price growth (% per year)</label><input id="apr" type="number" inputmode="decimal" value="3" step="0.5"></div>
+</div>
+<div class="row">
+<div><label for="rent">Monthly rent ($)</label><input id="rent" type="number" inputmode="decimal" value="2400" min="0"></div>
+<div><label for="rg">Rent increase (% per year)</label><input id="rg" type="number" inputmode="decimal" value="3" step="0.5"></div>
+</div>
+<div class="row">
+<div><label for="yrs">Years you will stay</label><input id="yrs" type="number" inputmode="decimal" value="7" min="1" max="30"></div>
+<div><label for="inv">Return if you invest instead (% per year)</label><input id="inv" type="number" inputmode="decimal" value="5" step="0.5"></div>
+</div>
+</section>
+<section class="card" aria-live="polite" aria-label="Results">
+<p class="per">Over your stay, the cheaper option is</p>
+<p class="big" id="win">Buying</p>
+<p class="note" id="diff"></p>
+<ul id="list"></ul>
+</section>
+</div>
+<footer>Estimates only. Buying costs assume 3% closing costs when you buy and 6% selling costs when you sell, and that you would invest your down payment if you rented. The model does not count tax deductions, mortgage insurance, or what you could earn by investing monthly savings. Real results depend on your local market.</footer>
+</main>
+<script>
+(function(){
+var ids=["price","down","rate","tax","ins","mnt","apr","rent","rg","yrs","inv"],el={};
+ids.forEach(function(i){el[i]=document.getElementById(i);el[i].addEventListener("input",calc)});
+var usd=new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0});
+function v(i){var n=parseFloat(el[i].value);return isFinite(n)?n:0}
+function calc(){
+var price=Math.max(v("price"),0),dp=price*Math.min(Math.max(v("down"),0),100)/100,loan=price-dp;
+var r=Math.max(v("rate"),0)/1200,n=360,yrs=Math.min(Math.max(Math.round(v("yrs")),1),30),months=yrs*12;
+var pay=r?loan*r/(1-Math.pow(1+r,-n)):loan/n,bal=loan,paid=0,owner=0,rent=Math.max(v("rent"),0),rentTotal=0;
+for(var m=1;m<=months;m++){
+var i=bal*r;bal-=pay-i;paid+=pay;
+owner+=price*Math.max(v("tax"),0)/1200+Math.max(v("ins"),0)/12+price*Math.max(v("mnt"),0)/1200;
+rentTotal+=rent;if(m%12===0)rent*=1+v("rg")/100;
+}
+var value=price*Math.pow(1+v("apr")/100,yrs),sell=value*0.06,closing=price*0.03;
+var buyCost=dp+closing+paid+owner-(value-sell-Math.max(bal,0));
+var gain=dp*(Math.pow(1+v("inv")/100,yrs)-1);
+var rentCost=rentTotal-gain;
+var d=rentCost-buyCost;
+document.getElementById("win").textContent=d>=0?"Buying":"Renting";
+document.getElementById("diff").textContent="About "+usd.format(Math.abs(d))+" cheaper over "+yrs+(yrs===1?" year":" years")+".";
+var rows=[["Net cost of buying",usd.format(buyCost)],["Net cost of renting",usd.format(rentCost)],["Home value when you sell",usd.format(value)],["Loan left when you sell",usd.format(Math.max(bal,0))],["Total rent paid",usd.format(rentTotal)],["Down payment growth if invested",usd.format(gain)]];
+document.getElementById("list").innerHTML=rows.map(function(x){return '<li><span>'+x[0]+'</span><b>'+x[1]+'</b></li>'}).join("");
+}
+calc();
+})();
+</script>
+</body>
+</html>
