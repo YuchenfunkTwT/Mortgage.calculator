@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Auto Loan Calculator</title>
+<meta name="description" content="Estimate your monthly car payment, total interest, and total cost with sales tax, down payment, and trade-in.">
+<style>
+:root{--bg:#eef2f5;--card:#fff;--ink:#14232e;--mute:#5b6b77;--line:#d5dde3;--acc:#1f6f5c;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1a21;--card:#17252e;--ink:#e8eef2;--mute:#97a8b4;--line:#2a3b46;--acc:#4fc3a1;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1a21;--card:#17252e;--ink:#e8eef2;--mute:#97a8b4;--line:#2a3b46;--acc:#4fc3a1;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:960px;margin:0 auto;padding:28px 18px 48px}
+h1{font:700 clamp(26px,5vw,38px)/1.15 Georgia,"Times New Roman",serif;margin:0 0 6px}
+.sub{color:var(--mute);margin:0 0 24px;max-width:56ch}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:760px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px}
+label{display:block;font-size:14px;color:var(--mute);margin:14px 0 4px}
+label:first-child{margin-top:0}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+input{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+input:focus-visible{outline:3px solid var(--acc);outline-offset:1px}
+.per{color:var(--mute);margin:0}
+.big{font:700 clamp(40px,9vw,60px)/1 Georgia,serif;color:var(--acc);margin:4px 0 6px}
+.note{color:var(--mute);margin:0 0 18px}
+ul{list-style:none;margin:0;padding:0}
+li{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+li:last-child{border:0}
+li b{font-variant-numeric:tabular-nums;text-align:right}
+nav{display:flex;flex-wrap:wrap;gap:6px 18px;margin:0 0 22px;padding-bottom:12px;border-bottom:1px solid var(--line);font-size:15px}
+nav a{text-decoration:none}
+nav a[aria-current]{color:var(--ink);font-weight:700}
+footer{margin-top:28px;font-size:13px;color:var(--mute);max-width:70ch}
+a{color:var(--acc)}
+</style>
+</head>
+<body>
+<main>
+<nav aria-label="Calculators"><a href="./">Mortgage payment</a><a href="extra-mortgage-payment.html">Extra payment</a><a href="hourly-to-salary.html">Hourly to salary</a><a href="rent-vs-buy.html">Rent vs buy</a><a href="auto-loan.html" aria-current="page">Auto loan</a></nav>
+<h1>Auto loan calculator</h1>
+<p class="sub">Estimate your monthly car payment and the total you will pay, including sales tax, down payment, and trade-in value.</p>
+<div class="grid">
+<section class="card" aria-label="Loan details">
+<label for="price">Vehicle price ($)</label>
+<input id="price" type="number" inputmode="decimal" value="30000" min="0">
+<div class="row">
+<div><label for="down">Down payment ($)</label><input id="down" type="number" inputmode="decimal" value="3000" min="0"></div>
+<div><label for="trade">Trade-in value ($)</label><input id="trade" type="number" inputmode="decimal" value="0" min="0"></div>
+</div>
+<div class="row">
+<div><label for="rate">Interest rate (%)</label><input id="rate" type="number" inputmode="decimal" value="7" min="0" step="0.125"></div>
+<div><label for="term">Loan term (months)</label><input id="term" type="number" inputmode="decimal" value="60" min="1" max="96"></div>
+</div>
+<label for="tax">Sales tax (%)</label>
+<input id="tax" type="number" inputmode="decimal" value="7" min="0" step="0.25">
+</section>
+<section class="card" aria-live="polite" aria-label="Results">
+<p class="per">Estimated monthly payment</p>
+<p class="big" id="pay">$0</p>
+<p class="note" id="loan"></p>
+<ul id="list"></ul>
+</section>
+</div>
+<footer>Estimates only. Sales tax rules vary by state, and some states tax only the price after your trade-in. This calculator taxes the full vehicle price. It does not include registration, title, or dealer fees, so your lender's quote may differ.</footer>
+</main>
+<script>
+(function(){
+var ids=["price","down","trade","rate","term","tax"],el={};
+ids.forEach(function(i){el[i]=document.getElementById(i);el[i].addEventListener("input",calc)});
+var usd=new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0});
+function v(i){var n=parseFloat(el[i].value);return isFinite(n)&&n>0?n:0}
+function calc(){
+var price=v("price"),tax=price*v("tax")/100,n=Math.max(Math.round(v("term")),1),r=v("rate")/1200;
+var loan=Math.max(price+tax-v("down")-v("trade"),0);
+var pay=r?loan*r/(1-Math.pow(1+r,-n)):loan/n;
+document.getElementById("pay").textContent=usd.format(pay);
+document.getElementById("loan").textContent="Loan amount "+usd.format(loan)+" over "+n+" months";
+var rows=[["Vehicle price",usd.format(price)],["Sales tax",usd.format(tax)],["Down payment and trade-in","-"+usd.format(v("down")+v("trade"))],["Total interest",usd.format(Math.max(pay*n-loan,0))],["Total of all payments",usd.format(pay*n)],["Total cost including down payment",usd.format(pay*n+v("down")+v("trade"))]];
+document.getElementById("list").innerHTML=rows.map(function(x){return '<li><span>'+x[0]+'</span><b>'+x[1]+'</b></li>'}).join("");
+}
+calc();
+})();
+</script>
+</body>
+</html>
