@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Extra Mortgage Payment Calculator</title>
+<meta name="description" content="See how much interest and time you save by paying extra on your mortgage each month.">
+<style>
+:root{--bg:#eef2f5;--card:#fff;--ink:#14232e;--mute:#5b6b77;--line:#d5dde3;--acc:#1f6f5c;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1a21;--card:#17252e;--ink:#e8eef2;--mute:#97a8b4;--line:#2a3b46;--acc:#4fc3a1;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1a21;--card:#17252e;--ink:#e8eef2;--mute:#97a8b4;--line:#2a3b46;--acc:#4fc3a1;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:960px;margin:0 auto;padding:28px 18px 48px}
+h1{font:700 clamp(26px,5vw,38px)/1.15 Georgia,"Times New Roman",serif;margin:0 0 6px}
+.sub{color:var(--mute);margin:0 0 24px;max-width:56ch}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:760px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px}
+label{display:block;font-size:14px;color:var(--mute);margin:14px 0 4px}
+label:first-child{margin-top:0}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+input{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+input:focus-visible{outline:3px solid var(--acc);outline-offset:1px}
+.per{color:var(--mute);margin:0}
+.big{font:700 clamp(40px,9vw,60px)/1 Georgia,serif;color:var(--acc);margin:4px 0 6px}
+.note{color:var(--mute);margin:0 0 18px}
+ul{list-style:none;margin:0;padding:0}
+li{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+li:last-child{border:0}
+li b{font-variant-numeric:tabular-nums;text-align:right}
+footer{margin-top:28px;font-size:13px;color:var(--mute);max-width:70ch}
+a{color:var(--acc)}
+</style>
+</head>
+<body>
+<main>
+<h1>Extra mortgage payment calculator</h1>
+<p class="sub">Enter your current loan and an extra monthly amount to see how much interest you save and how much sooner you pay off your home.</p>
+<div class="grid">
+<section class="card" aria-label="Loan details">
+<label for="bal">Current loan balance ($)</label>
+<input id="bal" type="number" inputmode="decimal" value="320000" min="0">
+<div class="row">
+<div><label for="rate">Interest rate (%)</label><input id="rate" type="number" inputmode="decimal" value="6.5" min="0" step="0.125"></div>
+<div><label for="yrs">Years left</label><input id="yrs" type="number" inputmode="decimal" value="30" min="1" max="40"></div>
+</div>
+<label for="extra">Extra payment per month ($)</label>
+<input id="extra" type="number" inputmode="decimal" value="200" min="0">
+<label for="lump">One-time extra payment now ($)</label>
+<input id="lump" type="number" inputmode="decimal" value="0" min="0">
+</section>
+<section class="card" aria-live="polite" aria-label="Results">
+<p class="per">Interest you save</p>
+<p class="big" id="saved">$0</p>
+<p class="note" id="sooner"></p>
+<ul id="list"></ul>
+</section>
+</div>
+<footer>Estimates assume your extra money goes straight to the loan principal and your lender applies it with no prepayment penalty. Check your loan terms first. Also see the <a href="./">mortgage payment calculator</a> and the <a href="hourly-to-salary.html">hourly to salary calculator</a>.</footer>
+</main>
+<script>
+(function(){
+var ids=["bal","rate","yrs","extra","lump"],el={};
+ids.forEach(function(i){el[i]=document.getElementById(i);el[i].addEventListener("input",calc)});
+var usd=new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0});
+function v(i){var n=parseFloat(el[i].value);return isFinite(n)&&n>0?n:0}
+function sim(bal,r,pay,extra){var m=0,int=0;while(bal>0.005&&m<1200){var i=bal*r;int+=i;var p=pay+extra-i;if(p<=0)return null;bal=Math.max(bal-p,0);m++}return{m:m,int:int}}
+function span(m){var y=Math.floor(m/12),mo=m%12;return y+" yr "+mo+" mo"}
+function calc(){
+var bal=v("bal"),r=v("rate")/100/12,n=Math.round(v("yrs")*12)||1;
+var pay=r?bal*r/(1-Math.pow(1+r,-n)):bal/n;
+var base=sim(bal,r,pay,0),fast=sim(Math.max(bal-v("lump"),0),r,pay,v("extra"));
+if(!base||!fast){return}
+var saved=Math.max(base.int-fast.int,0);
+document.getElementById("saved").textContent=usd.format(saved);
+document.getElementById("sooner").textContent="You pay off the loan "+span(Math.max(base.m-fast.m,0))+" sooner.";
+var rows=[["Regular monthly payment",usd.format(pay)],["Payoff time without extra",span(base.m)],["Payoff time with extra",span(fast.m)],["Total interest without extra",usd.format(base.int)],["Total interest with extra",usd.format(fast.int)]];
+document.getElementById("list").innerHTML=rows.map(function(x){return '<li><span>'+x[0]+'</span><b>'+x[1]+'</b></li>'}).join("");
+}
+calc();
+})();
+</script>
+</body>
+</html>
